@@ -1,0 +1,73 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            Int        @id @default(autoincrement())
+  email         String     @unique
+  name          String?
+  password      String
+  Supervisor    User       @relation("user_supervisor", fields: [supervisor_id], references: [id])
+  Subordinate   User[]     @relation("user_supervisor")
+  supervisor_id Int
+  created_at    DateTime   @default(now())
+  updated_at    DateTime   @default(now())
+  Task          Task[]
+  UserTask      UserTask[]
+}
+
+model Task {
+  id            Int        @id @default(autoincrement())
+  name          String
+  desc          String     @db.Text
+  deliverable   String
+  status        Int
+  start_date    DateTime   @default(now())
+  deadline      DateTime
+  percentage    Decimal
+  supervisor    User       @relation(fields: [supervisor_id], references: [id])
+  supervisor_id Int
+  created_at    DateTime   @default(now())
+  updated_at    DateTime   @default(now())
+  UserTask      UserTask[]
+  Progresses    Progress[]
+}
+
+model UserTask {
+  id         Int        @id @default(autoincrement())
+  user       User       @relation(fields: [user_id], references: [id])
+  user_id    Int
+  task       Task       @relation(fields: [task_id], references: [id])
+  task_id    Int
+  position   String
+  created_at DateTime   @default(now())
+  updated_at DateTime   @default(now())
+  Progress   Progress[]
+
+  @@unique([user_id, task_id])
+}
+
+model Progress {
+  id          Int      @id @default(autoincrement())
+  UserTask    UserTask @relation(fields: [user_id, task_id], references: [user_id, task_id])
+  user_id     Int
+  task_id     Int
+  achievement String
+  problem     String
+  next_plan   String
+  percentage  Decimal
+  created_at  DateTime @default(now())
+  updated_at  DateTime @default(now())
+  Task        Task?    @relation(fields: [task_id], references: [id])
+}
