@@ -25,6 +25,8 @@ model User {
   updated_at    DateTime   @default(now())
   Task          Task[]
   UserTask      UserTask[]
+
+  @@map("users")
 }
 
 model Task {
@@ -42,6 +44,8 @@ model Task {
   updated_at    DateTime   @default(now())
   UserTask      UserTask[]
   Progresses    Progress[]
+
+  @@map("tasks")
 }
 
 model UserTask {
@@ -56,6 +60,7 @@ model UserTask {
   Progress   Progress[]
 
   @@unique([user_id, task_id])
+  @@map("user_tasks")
 }
 
 model Progress {
@@ -70,4 +75,6 @@ model Progress {
   created_at  DateTime @default(now())
   updated_at  DateTime @default(now())
   Task        Task?    @relation(fields: [task_id], references: [id])
+
+  @@map("progresses")
 }
