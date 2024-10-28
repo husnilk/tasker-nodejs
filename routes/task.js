@@ -1,5 +1,6 @@
 var express = require("express");
 var { PrismaClient } = require('@prisma/client');
+const verifyToken = require("../middlewares/verifyToken");
 
 var prisma = new PrismaClient();
 var router = express.Router();

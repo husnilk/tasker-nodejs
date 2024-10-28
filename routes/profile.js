@@ -17,7 +17,7 @@ router.get('/', verifyToken, async (req, res, next) =>{
 });
 
 /* Updated User Profile */
-router.post('/', verifyToken, async (req, res, next){
+router.post('/', verifyToken, async (req, res, next) => {
     var userId = req.user.id;
 
     var email = req.body.email;

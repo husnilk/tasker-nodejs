@@ -50,7 +50,7 @@ model UserTask {
   user_id    Int
   task       Task       @relation(fields: [task_id], references: [id])
   task_id    Int
-  position   String
+  position   String?
   created_at DateTime   @default(now())
   updated_at DateTime   @default(now())
   Progress   Progress[]
