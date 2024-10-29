@@ -18,6 +18,7 @@ model User {
   email         String     @unique
   name          String?
   password      String
+  avatar        String?
   Supervisor    User?      @relation("user_supervisor", fields: [supervisor_id], references: [id])
   Subordinate   User[]     @relation("user_supervisor")
   supervisor_id Int?

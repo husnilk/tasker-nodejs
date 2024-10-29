@@ -7,30 +7,29 @@ const router = express.Router();
 const db = new PrismaClient();
 
 /* List progress */
-router.get('/:taskId/progress', verifyToken, async (req, res, next) => {
-    let taskId = req.params.taskId;
+// router.get('/:taskId/progress', verifyToken, async (req, res, next) => {
+//     let taskId = req.params.taskId;
 
-    let progresses = await db.progress.findMany({
-        where: {
-            task_id : taskId
-        }
-    });
+//     let progresses = await db.progress.findMany({
+//         where: {
+//             task_id : taskId
+//         }
+//     });
 
-    let task = await db.task.findUnique({
-        where: {
-            id: taskId
-        }
-    });
+//     let task = await db.task.findUnique({
+//         where: {
+//             id: taskId
+//         }
+//     });
 
-    task.progresses = progresses;
+//     task.progresses = progresses;
 
-    return res.json({
-        status: 'success',
-        message: 'Data retrieved successfully',
-        task : task
-    });
-
-});
+//     return res.json({
+//         status: 'success',
+//         message: 'Data retrieved successfully',
+//         task : task
+//     });
+// });
 
 /* Add progress */
 router.post('/:taskId/progress', verifyToken, async (req, res, next) => {

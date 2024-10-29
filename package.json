@@ -2,6 +2,9 @@
   "name": "central-api-nodejs",
   "version": "0.0.0",
   "private": true,
+  "prisma": {
+    "seed": "node prisma/seed.js"
+  },
   "scripts": {
     "start": "node ./bin/www",
     "dev": "nodemon ./bin/www"
