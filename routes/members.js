@@ -50,7 +50,7 @@ router.get("/:id", verifyToken, (req, res, next) => {
         email: true,
         name: true,
         avatar: true,
-        Task: {
+        UserTask: {
           select: {
             id: true,
             name: true,
