@@ -9,10 +9,10 @@ const prisma = new PrismaClient();
 router.get("/", verifyToken, async (req, res, next) => {
   //get userId;
   var userId = req.user.id;
-
+  
   var members = await prisma.user.findMany({
     where: {
-      supervisor_id: userId,
+      supervisor_id: userId
     },
     select: {
       id: true,
@@ -21,12 +21,12 @@ router.get("/", verifyToken, async (req, res, next) => {
       avatar: true,
       _count: {
         select: {
-          Task: true,
+          Assignments: true,
         },
       },
     },
   });
-
+  
   return res.json({
     status: "success",
     message: "Data retrieved successfully",
@@ -35,41 +35,46 @@ router.get("/", verifyToken, async (req, res, next) => {
 });
 
 /* Get detail information of subordinate */
-router.get("/:id", verifyToken, (req, res, next) => {
+router.get("/:id", verifyToken, async (req, res, next) => {
   var memberId = req.params.id;
   var userId = req.user.id;
+  
+  let tasks = await prisma.user.findUnique({
+    where: {
+      id: Number(memberId),
+      supervisor_id: Number(userId),
+    },
+    select: {
+      id: true,
+      email: true,
+      name: true,
+      avatar: true,
+      Assignments: {
+        select: {
+          user_id: true,
+          task_id: true,
+          position: true,
+          Task: {
+            select: {
+              name: true,
+              desc: true,
+              deliverable: true,
+              status: true
+            }
+          }
+        }
+      }
+    },
+  })
+  
+  tasks.Assignments = tasks.Assignments.map((assignment) => assignment.Task)
 
-  prisma.user
-    .findUnique({
-      where: {
-        id: Number(memberId),
-        supervisor_id: Number(userId),
-      },
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        avatar: true,
-        UserTask: {
-          select: {
-            id: true,
-            name: true,
-            desc: true,
-            deliverable: true,
-            status: true,
-            start_date: true,
-            deadline: true,
-          },
-        },
-      },
-    })
-    .then((member) => {
-      return res.json({
-        status: "success",
-        message: "Data retrieved successfully",
-        data: member,
-      });
-    });
+  return res.json({
+    status: "success",
+    message: "Data retrieved successfully",
+    data: tasks,
+  });
+
 });
 
 module.exports = router;

@@ -14,68 +14,68 @@ datasource db {
 }
 
 model User {
-  id            Int        @id @default(autoincrement())
-  email         String     @unique
+  id            Int          @id @default(autoincrement())
+  email         String       @unique
   name          String?
   password      String
   avatar        String?
-  Supervisor    User?      @relation("user_supervisor", fields: [supervisor_id], references: [id])
-  Subordinate   User[]     @relation("user_supervisor")
+  Supervisor    User?        @relation("user_supervisor", fields: [supervisor_id], references: [id])
+  Members       User[]       @relation("user_supervisor")
   supervisor_id Int?
-  created_at    DateTime   @default(now())
-  updated_at    DateTime   @default(now())
-  Task          Task[]
-  UserTask      UserTask[] 
+  created_at    DateTime     @default(now())
+  updated_at    DateTime     @default(now())
+  Tasks         Task[]
+  Assignments   Assignment[]
 
   @@map("users")
 }
 
 model Task {
-  id            Int        @id @default(autoincrement())
+  id            Int          @id @default(autoincrement())
   name          String
-  desc          String     @db.Text
+  desc          String       @db.Text
   deliverable   String?
-  status        Int        @default(1)
-  start_date    DateTime   @default(now())
+  status        Int          @default(1)
+  start_date    DateTime     @default(now())
   deadline      DateTime?
   percentage    Decimal?
-  supervisor    User?      @relation(fields: [supervisor_id], references: [id])
+  supervisor    User?        @relation(fields: [supervisor_id], references: [id])
   supervisor_id Int?
-  created_at    DateTime   @default(now())
-  updated_at    DateTime   @default(now())
-  UserTask      UserTask[]
+  created_at    DateTime     @default(now())
+  updated_at    DateTime     @default(now())
+  Assignments   Assignment[]
   Progresses    Progress[]
 
   @@map("tasks")
 }
 
-model UserTask {
+model Assignment {
   id         Int        @id @default(autoincrement())
-  user       User       @relation(fields: [user_id], references: [id])
+  User       User       @relation(fields: [user_id], references: [id])
   user_id    Int
-  task       Task       @relation(fields: [task_id], references: [id])
+  Task       Task       @relation(fields: [task_id], references: [id])
   task_id    Int
   position   String?
   created_at DateTime   @default(now())
   updated_at DateTime   @default(now())
-  Progress   Progress[]
+  Progresses Progress[]
 
   @@unique([user_id, task_id])
   @@map("user_tasks")
 }
 
 model Progress {
-  id          Int      @id @default(autoincrement())
-  UserTask    UserTask @relation(fields: [user_id, task_id], references: [user_id, task_id])
+  id          Int        @id @default(autoincrement())
+  Assignment  Assignment @relation(fields: [user_id, task_id], references: [user_id, task_id])
   user_id     Int
   task_id     Int
   achievement String
   problem     String?
   next_plan   String?
   percentage  Decimal?
-  created_at  DateTime @default(now())
-  updated_at  DateTime @default(now())
-  Task        Task?    @relation(fields: [task_id], references: [id])
+  created_at  DateTime   @default(now())
+  updated_at  DateTime   @default(now())
+  Task        Task?      @relation(fields: [task_id], references: [id])
 
   @@map("progresses")
 }

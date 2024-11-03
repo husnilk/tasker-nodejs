@@ -2,59 +2,53 @@ var express = require("express");
 var { PrismaClient } = require("@prisma/client");
 const verifyToken = require("../middlewares/verifyToken");
 
-var prisma = new PrismaClient();
+var db = new PrismaClient();
 var router = express.Router();
 
 /* List Our task */
 router.get("/", verifyToken, async (req, res, next) => {
   let userId = req.user.id;
-
-  let tasks = await prisma.task.findMany({
+  
+  let tasks = await db.task.findMany({
     where: {
-      supervisor_id: userId,
+        Assignments: {
+          some: {
+            user_id: userId
+          }
+        }
     },
+    select: {
+      id: true,
+      name: true,
+      desc: true,
+      deliverable: true,
+      status: true,
+      _count: {
+        select:{
+          Progresses: true
+        }
+      }
+    }
   });
 
+  tasks.map((task) => {
+    task.Progresses = task._count.Progresses;
+    delete(task._count);
+  })
+  
   return res.json({
     status: "success",
     message: "Data retrieved successfully",
-    data: tasks,
+    data: tasks
   });
 });
 
-/* Create new Task */
-// router.post("/create", verifyToken, async (req, res, next) => {
-//   var name = req.body.name;
-//   var desc = req.body.desc;
-//   var deliverable = req.body.deliverable;
-//   var start_date = new Date(req.body.start_date).toISOString();
-//   var deadline = new Date(req.body.deadline).toISOString();
-
-//   const createdTask = await prisma.task.create({
-//     data: {
-//       name: name,
-//       desc: desc,
-//       deliverable: deliverable,
-//       status: 1,
-//       start_date: start_date,
-//       deadline: deadline,
-//       supervisor_id: req.user.supervisor_id,
-//       percentage: 0,
-//     },
-//   });
-
-//   return res.json({
-//     status: "success",
-//     message: "Data created successfully",
-//     data: createdTask,
-//   });
-// });
 
 /* Show task detail */
 router.get("/:id", verifyToken, async (req, res, next) => {
   var taskId = Number(req.params.id);
-
-  const task = await prisma.task.findUnique({
+  
+  const task = await db.task.findUnique({
     where: {
       id: taskId,
     },
@@ -87,7 +81,7 @@ router.get("/:id", verifyToken, async (req, res, next) => {
       },
     },
   });
-
+  
   return res.json({
     status: "success",
     message: "Data retrieved successfully",
@@ -95,53 +89,106 @@ router.get("/:id", verifyToken, async (req, res, next) => {
   });
 });
 
-/* Update Task Detail */
-// router.put("/:id", verifyToken, async (req, res, next) => {
-//   var taskId = req.params.id;
 
-//   var name = req.body.name;
-//   var desc = req.body.desc;
-//   var deliverable = req.body.deliverable;
-//   var start_date = req.body.start_date;
-//   var deadline = req.body.deadline;
+/* Add progress */
+router.post('/:taskId/progress', verifyToken, async (req, res, next) => {
+  let taskId = Number(req.params.taskId)
+  let userId = Number(req.user.id)
 
-//   const updatedTask = await prisma.task.update({
-//     where: {
-//       id: taskId,
-//     },
-//     data: {
-//       name: name,
-//       desc: desc,
-//       deliverable: deliverable,
-//       status: 1,
-//       start_date: start_date,
-//       deadline: deadline,
-//       supervisor_id: req.user.id,
-//     },
-//   });
+  console.log(taskId, userId);
+  
+  let achievement = req.body.achievement;
+  let problem = req.body.problem;
+  let next_plan = req.body.next_plan;
+  let percentage = Number(req.body.percentage)
+  
+  const progress = await db.progress.create({
+    data: {
+      user_id: userId,
+      task_id: taskId,
+      achievement: achievement,
+      problem: problem,
+      next_plan: next_plan,
+      percentage: percentage
+    }
+  })
+  
+  return res.json({
+    status: 'success',
+    message: 'Data created successfully',
+    progress: progress
+  });
+});
 
-//   return res.json({
-//     status: "success",
-//     message: "Data updated successfully",
-//     data: updatedTask,
-//   });
-// });
+/* Get Progress Detail */
+router.get('/:taskId/progress/:id', verifyToken, async (req, res, next) => {
+  
+  let progressId = Number(req.params.id)
+  let taskId = Number(req.params.taskId)
+  
+  let progress = await db.progress.findUnique({
+    where: {
+      task_id : taskId,
+      id: progressId
+    }
+  });
+  
+  return res.json({
+    status: 'success',
+    message: 'Progress retrieved successfully',
+    progress : progress
+  });
+  
+});
 
-/* Delete Task */
-// router.delete("/:id", verifyToken, async (req, res, next) => {
-//   var taskId = req.params.id;
+/* Update Progress */
+router.put('/:taskId/progress/:id', verifyToken, async (req, res, next) => {
+  var taskId = Number(req.params.taskId)
+  var progressId = Number(req.params.id);
+  
+  let achievement = req.body.achievement;
+  let problem = req.body.problem;
+  let next_plan = req.body.next_plan;
+  let percentage = Number(req.body.percentage)
+  
+  let updatedProgress = await db.progress.update({
+    where: {
+      task_id: taskId,
+      id: progressId
+    },
+    data: {
+      achievement: achievement,
+      problem: problem,
+      next_plan: next_plan,
+      percentage: percentage
+    }
+  });
+  
+  return res.status(200).json({
+    status: 'success',
+    message: 'Progress updated successfully',
+    progress: updatedProgress
+  });
+  
+});
 
-//   const deletedTask = await prisma.task.delete({
-//     where: {
-//       id: taskId,
-//     },
-//   });
-
-//   return res.json({
-//     status: "success",
-//     message: "Data deleted successfully",
-//     data: deletedTask,
-//   });
-// });
+/* Delete Progress */
+router.delete('/:taskId/progress/:id', verifyToken, async (req, res, next)=> {
+  var taskId = Number(req.params.taskId)
+  var progressId =  Number(req.params.id)
+  
+  var deletedProgress = await db.progress.delete({
+    where: {
+    task_id : taskId,
+    id: progressId
+    }
+  });
+  
+  return res.status(200).json({
+    status: 'success',
+    message: 'Progress deleted successfully',
+    progress: deletedProgress
+  });
+});
 
 module.exports = router;

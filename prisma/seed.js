@@ -18,7 +18,7 @@ async function main() {
       email: "admin@server.com",
       name: "Admin",
       password: bcryptjs.hashSync("password", 10),
-      supervisor_id: null,
+      supervisor_id: spv.id,
       avatar: null,
     },
   });
@@ -91,19 +91,19 @@ async function main() {
     },
   });
 
-  const userTask01 = await db.userTask.create({
+  const userTask01 = await db.assignment.create({
     data: {
       user_id: member01.id,
       task_id: task01.id,
     },
   });
-  const userTask02 = await db.userTask.create({
+  const userTask02 = await db.assignment.create({
     data: {
       user_id: member01.id,
       task_id: task02.id,
     },
   });
-  const userTask03 = await db.userTask.create({
+  const userTask03 = await db.assignment.create({
     data: {
       user_id: member02.id,
       task_id: task01.id,
